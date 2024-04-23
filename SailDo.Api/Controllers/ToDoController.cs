@@ -114,7 +114,7 @@ namespace SailDo.Api.Controllers
 
             Events.Add(new CloudEvent
             {
-                Id = key,
+                Id = GenerateKey(true),
                 Type = "ToDoItemDeleted",
                 Source = "api/todo",
                 Time = DateTime.UtcNow.ToString("o"),
