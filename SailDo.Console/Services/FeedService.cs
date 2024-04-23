@@ -63,7 +63,7 @@ namespace SailDo.Console.Services
         {
             var items = JsonHelper.Deserialize<List<ToDoItem>>(File.ReadAllText(ToDoSnapshotFileName));
 
-            var item = items.FirstOrDefault(i => i.Key == ((ToDoItem)cloudEvent.Data!).Key);
+            var item = items.FirstOrDefault(i => i.Key == cloudEvent.Subject);
 
             if (item is not null)
             {

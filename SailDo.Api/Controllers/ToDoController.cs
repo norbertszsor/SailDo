@@ -118,7 +118,8 @@ namespace SailDo.Api.Controllers
                 Type = "ToDoItemDeleted",
                 Source = "api/todo",
                 Time = DateTime.UtcNow.ToString("o"),
-                Method = "DELETE"
+                Method = "DELETE",
+                Subject = key
             });
 
             return NoContent();
