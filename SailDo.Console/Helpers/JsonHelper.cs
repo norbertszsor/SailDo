@@ -14,7 +14,10 @@ namespace SailDo.Console.Helpers
 
             settings.Converters.Add(new StringEnumConverter());
 
-            settings.ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() };
+            settings.ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            };
 
             settings.Formatting = Formatting.Indented;
 

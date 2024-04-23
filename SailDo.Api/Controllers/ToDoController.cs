@@ -10,6 +10,9 @@ namespace SailDo.Api.Controllers
         private static readonly List<ToDoItem> Items = [];
         private static readonly List<CloudEvent> Events = [];
 
+        public static int ItemSequence = 0;
+        public static int EventSequence = 0;
+
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -32,9 +35,7 @@ namespace SailDo.Api.Controllers
         [HttpGet("Feed")]
         public IActionResult GetFeed(string? lastEventId, int timeOut = 5000)
         {
-            var lastId = string.IsNullOrEmpty(lastEventId) ? Guid.Empty : Guid.Parse(lastEventId);
-
-            var events = Events.Where(e => Guid.Parse(e.Id).CompareTo(lastId) < 0).ToList();
+            var events = Events.Where(e => string.Compare(e.Id, lastEventId, StringComparison.Ordinal) > 0).ToList();
 
             if (events.Count == 0)
             {
@@ -58,28 +59,25 @@ namespace SailDo.Api.Controllers
                 IsDone = false
             };
 
-            var cloudEvent = new CloudEvent
+            Items.Add(newItem);
+
+            Events.Add(new CloudEvent
             {
-                Id = key,
+                Id = GenerateKey(true),
                 Type = "ToDoItemCreated",
                 Source = "api/todo",
                 Time = DateTime.UtcNow.ToString("o"),
                 Data = newItem,
-                Method = "PUT",
-                Subject = key
-            };
-
-            Items.Add(newItem);
-
-            Events.Add(cloudEvent);
+                Method = "PUT"
+            });
 
             return Created($"/api/todo/{key}", newItem);
         }
 
-        [HttpPut("{key}")]
-        public IActionResult Update(string key, [FromBody] ToDoItem item)
+        [HttpPut]
+        public IActionResult Update([FromBody] ToDoItem item)
         {
-            var existingItem = Items.FirstOrDefault(i => i.Key == key);
+            var existingItem = Items.FirstOrDefault(i => i.Key == item.Key);
 
             if (existingItem == null)
             {
@@ -89,17 +87,15 @@ namespace SailDo.Api.Controllers
             existingItem.Value = item.Value;
             existingItem.IsDone = item.IsDone;
 
-            var cloudEvent = new CloudEvent
+            Events.Add(new CloudEvent
             {
-                Id = existingItem.Key,
+                Id = GenerateKey(true),
                 Type = "ToDoItemUpdated",
                 Source = "api/todo",
                 Time = DateTime.UtcNow.ToString("o"),
                 Data = existingItem,
                 Method = "PUT"
-            };
-
-            Events.Add(cloudEvent);
+            });
 
             return Ok(existingItem);
         }
@@ -128,6 +124,11 @@ namespace SailDo.Api.Controllers
             return NoContent();
         }
 
-        private static string GenerateKey() => Guid.NewGuid().ToString();
+        public static string GenerateKey(bool isEvent = false)
+        {
+            return isEvent
+                ? Interlocked.Increment(ref EventSequence).ToString()
+                : Interlocked.Increment(ref ItemSequence).ToString();
+        }
     }
 }

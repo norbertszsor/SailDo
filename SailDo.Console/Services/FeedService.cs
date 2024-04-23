@@ -63,11 +63,6 @@ namespace SailDo.Console.Services
         {
             var items = JsonHelper.Deserialize<List<ToDoItem>>(File.ReadAllText(ToDoSnapshotFileName));
 
-            if (items is null)
-            {
-                return;
-            }
-
             var item = items.FirstOrDefault(i => i.Key == ((ToDoItem)cloudEvent.Data!).Key);
 
             if (item is not null)
@@ -82,24 +77,19 @@ namespace SailDo.Console.Services
         {
             var items = JsonHelper.Deserialize<List<ToDoItem>>(File.ReadAllText(ToDoSnapshotFileName));
 
-            if (items is null)
-            {
-                return;
-            }
-
             var eventItem = cloudEvent.Data!;
 
-            var itemToUpdate = items.FirstOrDefault(i => i.Key == cloudEvent.Id);
+            var existingItem = items.FirstOrDefault(i => i.Key == eventItem.Key);
 
-            if (itemToUpdate is not null)
+            if (cloudEvent.Type == "ToDoItemUpdated" && existingItem != null)
             {
-                itemToUpdate.Value = eventItem.Value;
-                itemToUpdate.IsDone = eventItem.IsDone;
-
-                return;
+                existingItem.Value = eventItem.Value;
+                existingItem.IsDone = eventItem.IsDone;
             }
-
-            items.Add(eventItem);
+            else
+            {
+                items.Add(eventItem);
+            }
 
             JsonHelper.Serialize(items, ToDoSnapshotFileName);
         }

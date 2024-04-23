@@ -8,17 +8,6 @@ namespace SailDo.Console.Client
 {
     public class SailDoClient(HttpClient client) : ISailDoClient
     {
-        public async Task<List<ToDoItem>?> GetAll()
-        {
-            var response = await client.GetAsync("https://localhost:7077/api/ToDo");
-
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            return JsonSerializer.Deserialize<List<ToDoItem>>(content);
-        }
-
         public async Task<List<CloudEvent>?> GetEvents(string lastEventId, int? timeOut = null)
         {
             var uriBuilder = new UriBuilder("https://localhost:7077/api/ToDo/Feed");
