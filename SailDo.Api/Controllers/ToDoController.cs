@@ -10,8 +10,8 @@ namespace SailDo.Api.Controllers
         private static readonly List<ToDoItem> Items = [];
         private static readonly List<CloudEvent> Events = [];
 
-        public static int ItemSequence = 0;
-        public static int EventSequence = 0;
+        private static int _itemSequence;
+        private static int _eventSequence;
 
         [HttpGet]
         public IActionResult GetAll()
@@ -35,7 +35,8 @@ namespace SailDo.Api.Controllers
         [HttpGet("Feed")]
         public IActionResult GetFeed(string? lastEventId, int timeOut = 5000)
         {
-            var events = Events.Where(e => string.Compare(e.Id, lastEventId, StringComparison.Ordinal) > 0).ToList();
+            var events = Events.Where(e => string.Compare(e.Id, lastEventId, StringComparison.Ordinal) > 0)
+                .ToList();
 
             if (events.Count == 0)
             {
@@ -128,8 +129,8 @@ namespace SailDo.Api.Controllers
         public static string GenerateKey(bool isEvent = false)
         {
             return isEvent
-                ? Interlocked.Increment(ref EventSequence).ToString()
-                : Interlocked.Increment(ref ItemSequence).ToString();
+                ? Interlocked.Increment(ref _eventSequence).ToString()
+                : Interlocked.Increment(ref _itemSequence).ToString();
         }
     }
 }
